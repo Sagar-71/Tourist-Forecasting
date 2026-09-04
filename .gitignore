@@ -2,15 +2,10 @@ __pycache__/
 *.pyc
 .venv/
 venv/
-
-# LaTeX build artefacts
 report/*.aux
 report/*.log
 report/*.out
 report/*.toc
-
-# Earlier exploratory work, kept locally
+report/
 archive/
 
-# Report kept locally, not published
-report/
