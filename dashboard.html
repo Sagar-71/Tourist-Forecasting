@@ -1,3 +1,8 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Arrivals Forecast Review</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,6 +36,8 @@
 }
 
 *{box-sizing:border-box}
+html{color-scheme:light dark}
+img{max-width:100%}
 body{
   background:var(--ground); color:var(--ink);
   font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
@@ -128,7 +135,8 @@ footer{margin-top:60px; padding-top:22px; border-top:1px solid var(--line);
 @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
 @media (max-width:560px){.wrap{padding:0 16px 64px} header{padding-top:40px}}
 </style>
-
+</head>
+<body>
 <div class="wrap">
 <header>
   <p class="eyebrow">Time-series forecasting &middot; 2016&ndash;2024</p>
@@ -492,3 +500,5 @@ if (window.matchMedia){
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll);
 }
 </script>
+</body>
+</html>
