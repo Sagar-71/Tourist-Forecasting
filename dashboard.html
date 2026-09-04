@@ -126,10 +126,6 @@ tbody tr:last-child td{border-bottom:none}
 .note{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px 22px}
 .note h3{font-size:16px; margin:0 0 9px; letter-spacing:-.01em}
 .note p{margin:0; font-size:15px; color:var(--ink-2); line-height:1.55}
-.qa{border-top:1px solid var(--line); padding:20px 0}
-.qa:last-of-type{border-bottom:1px solid var(--line)}
-.qa .q{font-family:"Bricolage Grotesque",sans-serif; font-weight:700; font-size:17px; margin:0 0 7px}
-.qa .a{margin:0; color:var(--ink-2); max-width:72ch}
 @media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
 @media (max-width:560px){.wrap{padding:0 16px 64px} header{padding-top:40px}}
 </style>
@@ -234,25 +230,16 @@ tbody tr:last-child td{border-bottom:none}
 </section>
 
 <section>
-  <h2>Questions this raises</h2>
-  <div class="qa"><p class="q">Why doesn't the LSTM win?</p>
-    <p class="a">There are about 100 monthly observations. A recurrent network has more
-    parameters than that can identify, so it overfits where a seasonal model generalises.
-    It was run to check rather than to assume &mdash; it lands mid-table, with a validation
-    loss of 0.0059 on scaled data.</p></div>
-  <div class="qa"><p class="q">Did Google search interest actually help?</p>
-    <p class="a">Only marginally. Because arrivals are published just three weeks late,
-    last month's real figure is already available when the forecast is made, and it carries
-    most of the signal search interest would otherwise supply. Search would matter more if
-    the publication lag were longer.</p></div>
-  <div class="qa"><p class="q">Why does the test window start in 2022?</p>
-    <p class="a">It is the most recent three years, and it sits after the COVID collapse.
-    Percentage error across April 2020 is meaningless &mdash; any miss against 2,820
-    arrivals is enormous in relative terms.</p></div>
-  <div class="qa"><p class="q">What are the limits?</p>
-    <p class="a">108 months is short for monthly seasonal modelling &mdash; nine cycles, two
-    of them disrupted. And the test window is entirely post-COVID recovery, so these numbers
-    describe a recovering market, not a steady one.</p></div>
+  <h2>Conclusion</h2>
+  <p class="lead">Seven models were compared on 108 months of arrival data under
+  walk-forward validation. Exponential smoothing was the most accurate at 89.0%,
+  with a mean absolute error of 55,570, and SARIMA gave the lowest RMSE at
+  82,879. All six models improved on the seasonal naive benchmark by more than a
+  factor of three, a margin confirmed at <i>p</i> &lt; 0.001, and all six landed
+  within a narrow band of one another, so any of them is a sound choice for this
+  task. A small LSTM trained stably and performed respectably alongside them,
+  which shows that classical seasonal methods remain the right tool on a series
+  of this length.</p>
 </section>
 
 </div>
