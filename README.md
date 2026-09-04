@@ -112,14 +112,6 @@ The six models are also steadier than the benchmark, not just better on
 average. Their interquartile ranges are comparable and narrow, while the
 benchmark combines a higher median with a far wider spread.
 
-## What the LSTM shows
-
-The LSTM was included as a test rather than an assumption. It trained stably
-and reached 87.8% accuracy, within the same band as every other model, but did
-not improve on the classical seasonal methods. With 108 monthly observations in
-total, and about 70 available at the first walk-forward step, there is little
-room for a network to learn an annual cycle that ETS and SARIMA already carry
-by construction.
 
 ## Running it
 
