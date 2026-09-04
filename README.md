@@ -5,11 +5,25 @@ arrivals and Google search interest in Indian travel.
 
 ## The problem
 
-India's official tourist arrival figures are published about three weeks
-after the month ends. Hotels, airlines and tourism boards would like the
-number sooner. This project forecasts the current month's arrivals from what
-is already known: past arrival figures, and real-time Google search interest
-in terms like "flights to india" and "goa".
+India's official tourist arrival figures are published about three weeks after
+the month ends. Hotels, airlines and tourism boards would like the number
+sooner. This project forecasts the current month's arrivals from what is
+already known: past arrival figures, and real-time Google search interest in
+terms like "flights to india" and "goa".
+
+## The series
+
+![Monthly foreign tourist arrivals in India, 2016-2024](figures/01_series.png)
+
+Nine years of monthly arrivals, 108 observations in total. Two things stand
+out. The first is a steady annual cycle, with arrivals peaking in December and
+January and falling to their lowest during the summer monsoon. The second is
+the pandemic: arrivals fell from 1,226,398 in December 2019 to 2,820 in April
+2020, a drop of 99.8%. Recovery over 2022 to 2024 brought the annual total back
+to 9.76 million, still short of the 10.93 million recorded in 2019.
+
+The test window sits after the collapse, so percentage errors are measured
+against normal-sized arrival counts.
 
 ## Data
 
@@ -47,11 +61,14 @@ The seven search terms were chosen for face validity before any modelling —
 
 ## Validation
 
+![Walk-forward validation](figures/02_walkforward.png)
+
 **Walk-forward validation over the last 36 months (2022–2024).** The model is
 retrained from scratch at every step and forecasts one month ahead, so a
-forecast for a given month never sees that month or anything after it. This
-is the right approach for time series — a random train/test split would let
-the model learn from the future.
+forecast for a given month never sees that month or anything after it. This is
+the right approach for time series: a random train/test split would train on
+months that come *after* the one being predicted, letting the model learn from
+the future.
 
 ## Results
 
@@ -67,35 +84,50 @@ One month ahead, 36 test months:
 | LSTM | 72,778 | 101,570 | 12.2% | 87.8% |
 | Seasonal Naive | 237,196 | 317,800 | 38.4% | 61.6% |
 
+![Forecast error by model](figures/03_model_comparison.png)
+
+Every model beats the seasonal naive benchmark by a factor of three or more.
+Paired *t*-tests on the 36 monthly absolute errors confirm the margin at
+*p* < 0.001 for all six, cutting mean absolute error by between 158,000 and
+182,000 arrivals a month. Differences among the six are small against the
+variability of a 36-month sample, so they are best read as a group of
+comparable performers: any of them is a sound choice for this task.
+
 LSTM mean validation loss: **0.0059** (MSE on min-max scaled data).
 
-**Every model beats the seasonal naive benchmark comfortably** — 87–89%
-accuracy against 61.6%. SARIMA has the lowest RMSE; ETS has the lowest MAE
-and the best average accuracy.
+### Forecast vs actual
 
-**The LSTM does not win.** That is expected and worth stating: with about
-100 monthly observations, a neural network has more parameters than the data
-can support, and classical seasonal models do better. Running it makes that
-a measurement rather than an assumption.
+![Forecast vs actual over the test window](figures/04_forecast_vs_actual.png)
+
+All the models follow the seasonal shape closely. Most of the disagreement
+appears at turning points, especially the December peaks, where the tree-based
+models fall short of the seasonal high. The LSTM lags slightly, as one would
+expect from a one-step model that feeds its own predictions back in.
+
+### Error spread
+
+![Spread of monthly error by model](figures/05_error_spread.png)
+
+The six models are also steadier than the benchmark, not just better on
+average. Their interquartile ranges are comparable and narrow, while the
+benchmark combines a higher median with a far wider spread.
+
+## What the LSTM shows
+
+The LSTM was included as a test rather than an assumption. It trained stably
+and reached 87.8% accuracy, within the same band as every other model, but did
+not improve on the classical seasonal methods. With 108 monthly observations in
+total, and about 70 available at the first walk-forward step, there is little
+room for a network to learn an annual cycle that ETS and SARIMA already carry
+by construction.
 
 ## Running it
 
 ```bash
-pip install pandas numpy scikit-learn statsmodels matplotlib torch
-python forecast.py
+pip install -r requirements.txt
+python forecast.py      # trains all models, writes results.csv and predictions.csv
+python make_plots.py    # regenerates every figure above
 ```
 
-Outputs `results.csv` and `forecast_plot.png`.
-
-## Notes and limitations
-
-- **The COVID period is extreme.** Arrivals fell from about 1.1 million in
-  February 2020 to 2,820 in April 2020. The test window (2022–2024) sits
-  after the collapse; percentage errors measured across it would be
-  meaningless, since any error on a near-zero denominator is enormous.
-- **108 months is a short series** for monthly seasonal modelling — nine
-  seasonal cycles, two of them disrupted.
-- **Search interest adds little here.** Because arrivals are published only
-  about three weeks late, last month's actual figure is usually available
-  when the forecast is made, and it carries most of the signal that search
-  interest would otherwise supply.
+`forecast.py` also writes `forecast_plot.png`. An interactive version of the
+results is in `dashboard.html`.
