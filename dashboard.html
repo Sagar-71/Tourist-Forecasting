@@ -1,0 +1,494 @@
+<title>Arrivals Forecast Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+:root{
+  --ground:#EFF3F2; --surface:#FCFCFB; --surface-2:#E7EDEB; --raise:#FFFFFF;
+  --ink:#121A1B; --ink-2:#3A4749; --muted:#657374; --line:#D9E1DF; --grid:#E6ECEA;
+  --accent:#0D9488; --accent-soft:#0D948818;
+  --s1:#0D9488; --s2:#C2410C; --s3:#4338CA; --s4:#BE123C;
+  --good:#15803D; --warn:#B45309;
+  --shadow:0 1px 2px #0f1a1a0d, 0 8px 24px -12px #0f1a1a1f;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0B1011; --surface:#141A21; --surface-2:#1B242A; --raise:#1A2228;
+    --ink:#E9EFEE; --ink-2:#C0CBCA; --muted:#8C9B9B; --line:#263134; --grid:#1E282B;
+    --accent:#2DD4BF; --accent-soft:#2DD4BF1f;
+    --s1:#0D9488; --s2:#EA580C; --s3:#6366F1; --s4:#F43F5E;
+    --good:#4ADE80; --warn:#FBBF24;
+    --shadow:0 1px 2px #0006, 0 10px 30px -14px #000a;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0B1011; --surface:#141A21; --surface-2:#1B242A; --raise:#1A2228;
+  --ink:#E9EFEE; --ink-2:#C0CBCA; --muted:#8C9B9B; --line:#263134; --grid:#1E282B;
+  --accent:#2DD4BF; --accent-soft:#2DD4BF1f;
+  --s1:#0D9488; --s2:#EA580C; --s3:#6366F1; --s4:#F43F5E;
+  --good:#4ADE80; --warn:#FBBF24;
+  --shadow:0 1px 2px #0006, 0 10px 30px -14px #000a;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+  font-size:17px; line-height:1.62; margin:0;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px; margin:0 auto; padding:0 24px 96px}
+h1,h2,h3{font-family:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif; text-wrap:balance}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace; font-variant-numeric:tabular-nums}
+
+header{padding:64px 0 8px}
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--accent); margin:0 0 18px}
+h1{font-size:clamp(34px,5.4vw,54px); line-height:1.04; letter-spacing:-.022em;
+  font-weight:800; margin:0 0 18px}
+.thesis{font-size:clamp(18px,2.1vw,21px); color:var(--ink-2); max-width:60ch; margin:0 0 26px}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{font-family:"IBM Plex Mono",monospace; font-size:11.5px; letter-spacing:.04em;
+  color:var(--ink-2); background:var(--surface-2); border:1px solid var(--line);
+  padding:5px 11px; border-radius:999px}
+
+.verdict{background:var(--surface); border:1px solid var(--line); border-radius:14px;
+  padding:30px 32px; margin:38px 0 30px; box-shadow:var(--shadow);
+  border-left:3px solid var(--accent)}
+.verdict h2{font-size:13px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--muted); margin:0 0 14px; font-weight:600;
+  font-family:"IBM Plex Mono",monospace}
+.verdict p{margin:0; font-size:clamp(19px,2.4vw,24px); line-height:1.42; color:var(--ink)}
+.verdict b{color:var(--accent); font-weight:600}
+
+.stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin:30px 0 12px}
+.tile{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px}
+.tile .k{font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:10px}
+.tile .v{font-family:"Bricolage Grotesque",sans-serif; font-size:34px; font-weight:700;
+  line-height:1; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+.tile .s{font-size:14px; color:var(--muted); margin-top:8px; line-height:1.4}
+
+section{margin-top:58px}
+section>h2{font-size:clamp(23px,3vw,30px); letter-spacing:-.018em; margin:0 0 10px; font-weight:700}
+.lead{color:var(--ink-2); max-width:66ch; margin:0 0 22px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:14px;
+  padding:24px; box-shadow:var(--shadow)}
+
+.chartbox{position:relative}
+svg{display:block; width:100%; height:auto; overflow:visible}
+.axis{font-family:"IBM Plex Mono",monospace; font-size:10.5px; fill:var(--muted)}
+.gridline{stroke:var(--grid); stroke-width:1}
+.zero{stroke:var(--line); stroke-width:1}
+.tip{position:absolute; pointer-events:none; opacity:0; transition:opacity .12s;
+  background:var(--raise); border:1px solid var(--line); border-radius:9px;
+  padding:10px 12px; box-shadow:var(--shadow); font-size:13px; min-width:158px; z-index:5}
+.tip .tm{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--muted);
+  letter-spacing:.05em; margin-bottom:7px}
+.tip .row{display:flex; align-items:center; gap:10px; justify-content:space-between;
+  margin-top:4px; font-size:13px}
+.tip .row span:first-child{display:flex; align-items:center; gap:7px; color:var(--ink-2)}
+.sw{width:10px; height:10px; border-radius:3px; flex:none; display:inline-block}
+.tip .row b{font-family:"IBM Plex Mono",monospace; font-weight:500; color:var(--ink)}
+
+.legend{display:flex; flex-wrap:wrap; gap:7px; margin:0 0 16px}
+.lg{display:inline-flex; align-items:center; gap:7px; font-family:"IBM Plex Mono",monospace;
+  font-size:11.5px; padding:5px 11px; border-radius:999px; border:1px solid var(--line);
+  background:var(--surface-2); color:var(--ink-2); cursor:pointer; letter-spacing:.02em}
+button.lg[aria-pressed="true"]{background:var(--raise); color:var(--ink); border-color:var(--muted)}
+button.lg[aria-pressed="false"]{opacity:.45}
+.lg:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse; width:100%; font-size:14.5px; min-width:560px}
+th,td{text-align:right; padding:11px 14px; border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+thead th{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--muted); font-weight:600; white-space:nowrap}
+tbody td{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; color:var(--ink-2)}
+tbody td:first-child{font-family:"Source Serif 4",serif; color:var(--ink); font-weight:600}
+tbody tr.best td{background:var(--accent-soft)}
+tbody tr.base td{color:var(--muted)}
+tbody tr:last-child td{border-bottom:none}
+.tag{font-family:"IBM Plex Mono",monospace; font-size:9.5px; letter-spacing:.08em;
+  text-transform:uppercase; padding:2px 7px; border-radius:4px; margin-left:9px;
+  border:1px solid currentColor; vertical-align:middle; white-space:nowrap}
+.tag.b{color:var(--good)} .tag.n{color:var(--warn)}
+
+.notes{display:grid; grid-template-columns:repeat(auto-fit,minmax(272px,1fr)); gap:14px}
+.note{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px 22px}
+.note h3{font-size:16px; margin:0 0 9px; letter-spacing:-.01em}
+.note p{margin:0; font-size:15px; color:var(--ink-2); line-height:1.55}
+.qa{border-top:1px solid var(--line); padding:20px 0}
+.qa:last-of-type{border-bottom:1px solid var(--line)}
+.qa .q{font-family:"Bricolage Grotesque",sans-serif; font-weight:700; font-size:17px; margin:0 0 7px}
+.qa .a{margin:0; color:var(--ink-2); max-width:72ch}
+footer{margin-top:60px; padding-top:22px; border-top:1px solid var(--line);
+  color:var(--muted); font-size:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+@media (max-width:560px){.wrap{padding:0 16px 64px} header{padding-top:40px}}
+</style>
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">Time-series forecasting &middot; 2016&ndash;2024</p>
+  <h1>Forecasting India's monthly tourist arrivals</h1>
+  <p class="thesis">Official arrival figures are published about three weeks after the
+  month ends. Seven models were trained to estimate the number sooner, from past arrivals
+  and live Google search interest &mdash; then tested month by month across the last
+  three years.</p>
+  <div class="chips">
+    <span class="chip">108 months</span>
+    <span class="chip">7 models</span>
+    <span class="chip">36 test months</span>
+    <span class="chip">25 features</span>
+    <span class="chip">walk-forward validation</span>
+  </div>
+</header>
+
+<div class="verdict">
+  <h2>What was achieved</h2>
+  <p>Exponential smoothing forecasts next month's arrivals to within <b>11%</b> on
+  average &mdash; <b>89.0% accuracy</b> against <b>61.6%</b> for the seasonal benchmark
+  it has to beat. Every model tested cleared that benchmark; the neural network did not
+  win.</p>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<section>
+  <h2>The series being forecast</h2>
+  <p class="lead">Nine years of monthly arrivals. Strong seasonality &mdash; December
+  peaks, summer troughs &mdash; interrupted by a collapse to <span class="mono">2,820</span>
+  arrivals in April 2020, down from <span class="mono">1.23 million</span> four months
+  earlier. That break is what makes this series hard, and why the test window sits after
+  it.</p>
+  <div class="card">
+    <div class="chartbox">
+      <svg id="c-hist" viewBox="0 0 1000 340" role="img" aria-label="Monthly foreign tourist arrivals, 2016 to 2024"></svg>
+      <div class="tip" id="t-hist"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Forecast vs reality</h2>
+  <p class="lead">The 36-month test window, January 2022 to December 2024. Each point is a
+  forecast made without ever seeing that month or anything after it. Toggle models to
+  compare; hover for exact figures.</p>
+  <div class="card">
+    <div class="legend" id="lg-fc"></div>
+    <div class="chartbox">
+      <svg id="c-fc" viewBox="0 0 1000 360" role="img" aria-label="Actual versus forecast arrivals over the test window"></svg>
+      <div class="tip" id="t-fc"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>How the models compare</h2>
+  <p class="lead">Root mean squared error across the test window &mdash; lower is better.
+  RMSE punishes large misses, so it separates models that occasionally get a month badly
+  wrong. The seasonal benchmark is shown for scale.</p>
+  <div class="card">
+    <div class="chartbox">
+      <svg id="c-bar" viewBox="0 0 1000 300" role="img" aria-label="Root mean squared error by model"></svg>
+      <div class="tip" id="t-bar"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <div class="tablewrap">
+      <table id="tbl">
+        <thead><tr><th>Model</th><th>MAE</th><th>RMSE</th><th>MAPE</th><th>Accuracy</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>How it was tested</h2>
+  <p class="lead">Walk-forward validation. For each month in the test window the model is
+  retrained from scratch on everything before it, then asked for one month ahead. The
+  training set grows by one month at each step.</p>
+  <div class="card">
+    <svg id="c-wf" viewBox="0 0 1000 190" role="img" aria-label="Diagram of expanding-window walk-forward validation"></svg>
+  </div>
+  <div class="notes" style="margin-top:14px">
+    <div class="note"><h3>Why not a random split</h3><p>A random train/test split would
+    train on months that come <em>after</em> the one being predicted. The model would be
+    learning from the future, and the score would be flattering and meaningless.</p></div>
+    <div class="note"><h3>What the model may see</h3><p>Arrivals up to the previous month,
+    since figures are published about three weeks late, plus the current month's search
+    interest, which is available immediately.</p></div>
+    <div class="note"><h3>Why the benchmark matters</h3><p>Seasonal naive just repeats last
+    year's value for the same month. A forecast that cannot beat it has not earned its
+    complexity. All six real models do.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Questions this raises</h2>
+  <div class="qa"><p class="q">Why doesn't the LSTM win?</p>
+    <p class="a">There are about 100 monthly observations. A recurrent network has more
+    parameters than that can identify, so it overfits where a seasonal model generalises.
+    It was run to check rather than to assume &mdash; it lands mid-table, with a validation
+    loss of 0.0059 on scaled data.</p></div>
+  <div class="qa"><p class="q">Did Google search interest actually help?</p>
+    <p class="a">Only marginally. Because arrivals are published just three weeks late,
+    last month's real figure is already available when the forecast is made, and it carries
+    most of the signal search interest would otherwise supply. Search would matter more if
+    the publication lag were longer.</p></div>
+  <div class="qa"><p class="q">Why does the test window start in 2022?</p>
+    <p class="a">It is the most recent three years, and it sits after the COVID collapse.
+    Percentage error across April 2020 is meaningless &mdash; any miss against 2,820
+    arrivals is enormous in relative terms.</p></div>
+  <div class="qa"><p class="q">What are the limits?</p>
+    <p class="a">108 months is short for monthly seasonal modelling &mdash; nine cycles, two
+    of them disrupted. And the test window is entirely post-COVID recovery, so these numbers
+    describe a recovering market, not a steady one.</p></div>
+</section>
+
+<footer>Foreign Tourist Arrivals, Ministry of Tourism via data.gov.in &middot; Google Trends,
+seven travel search terms &middot; Walk-forward validated, Jan 2022 &ndash; Dec 2024</footer>
+</div>
+
+<script>
+const D = {"history":[{"m":"2016-01","a":844533},{"m":"2016-02","a":848782},{"m":"2016-03","a":809107},{"m":"2016-04","a":592004},{"m":"2016-05","a":527466},{"m":"2016-06","a":546972},{"m":"2016-07","a":733834},{"m":"2016-08","a":652111},{"m":"2016-09","a":608177},{"m":"2016-10","a":741770},{"m":"2016-11","a":878280},{"m":"2016-12","a":1021375},{"m":"2017-01","a":964109},{"m":"2017-02","a":931025},{"m":"2017-03","a":885936},{"m":"2017-04","a":717899},{"m":"2017-05","a":622408},{"m":"2017-06","a":663470},{"m":"2017-07","a":779309},{"m":"2017-08","a":719129},{"m":"2017-09","a":719964},{"m":"2017-10","a":866976},{"m":"2017-11","a":997738},{"m":"2017-12","a":1167840},{"m":"2018-01","a":1045027},{"m":"2018-02","a":1049259},{"m":"2018-03","a":1021539},{"m":"2018-04","a":745033},{"m":"2018-05","a":606513},{"m":"2018-06","a":683935},{"m":"2018-07","a":806493},{"m":"2018-08","a":785993},{"m":"2018-09","a":719894},{"m":"2018-10","a":890223},{"m":"2018-11","a":1012569},{"m":"2018-12","a":1191498},{"m":"2019-01","a":1111040},{"m":"2019-02","a":1090516},{"m":"2019-03","a":978236},{"m":"2019-04","a":774651},{"m":"2019-05","a":615136},{"m":"2019-06","a":726446},{"m":"2019-07","a":818125},{"m":"2019-08","a":800837},{"m":"2019-09","a":751513},{"m":"2019-10","a":945017},{"m":"2019-11","a":1092440},{"m":"2019-12","a":1226398},{"m":"2020-01","a":1119250},{"m":"2020-02","a":1018440},{"m":"2020-03","a":328304},{"m":"2020-04","a":2820},{"m":"2020-05","a":3764},{"m":"2020-06","a":8590},{"m":"2020-07","a":12655},{"m":"2020-08","a":19761},{"m":"2020-09","a":28167},{"m":"2020-10","a":41494},{"m":"2020-11","a":70977},{"m":"2020-12","a":90544},{"m":"2021-01","a":83822},{"m":"2021-02","a":99640},{"m":"2021-03","a":123179},{"m":"2021-04","a":69442},{"m":"2021-05","a":13307},{"m":"2021-06","a":29397},{"m":"2021-07","a":64566},{"m":"2021-08","a":84955},{"m":"2021-09","a":106704},{"m":"2021-10","a":181325},{"m":"2021-11","a":251993},{"m":"2021-12","a":303799},{"m":"2022-01","a":201546},{"m":"2022-02","a":240896},{"m":"2022-03","a":342308},{"m":"2022-04","a":392930},{"m":"2022-05","a":423701},{"m":"2022-06","a":522737},{"m":"2022-07","a":640858},{"m":"2022-08","a":498243},{"m":"2022-09","a":536340},{"m":"2022-10","a":656895},{"m":"2022-11","a":768675},{"m":"2022-12","a":966270},{"m":"2023-01","a":891084},{"m":"2023-02","a":893352},{"m":"2023-03","a":824549},{"m":"2023-04","a":625772},{"m":"2023-05","a":618086},{"m":"2023-06","a":667720},{"m":"2023-07","a":786486},{"m":"2023-08","a":664155},{"m":"2023-09","a":666946},{"m":"2023-10","a":832233},{"m":"2023-11","a":948631},{"m":"2023-12","a":1101914},{"m":"2024-01","a":958733},{"m":"2024-02","a":1002664},{"m":"2024-03","a":859688},{"m":"2024-04","a":650748},{"m":"2024-05","a":600496},{"m":"2024-06","a":706045},{"m":"2024-07","a":776110},{"m":"2024-08","a":636277},{"m":"2024-09","a":691247},{"m":"2024-10","a":840330},{"m":"2024-11","a":973941},{"m":"2024-12","a":1060621}],"search":[{"m":"2016-01","v":29.3},{"m":"2016-02","v":27.6},{"m":"2016-03","v":28.0},{"m":"2016-04","v":29.6},{"m":"2016-05","v":30.1},{"m":"2016-06","v":29.6},{"m":"2016-07","v":27.1},{"m":"2016-08","v":25.9},{"m":"2016-09","v":27.0},{"m":"2016-10","v":26.1},{"m":"2016-11","v":26.9},{"m":"2016-12","v":27.2},{"m":"2017-01","v":27.4},{"m":"2017-02","v":25.8},{"m":"2017-03","v":27.8},{"m":"2017-04","v":25.4},{"m":"2017-05","v":27.2},{"m":"2017-06","v":26.7},{"m":"2017-07","v":24.7},{"m":"2017-08","v":25.0},{"m":"2017-09","v":27.1},{"m":"2017-10","v":31.8},{"m":"2017-11","v":28.2},{"m":"2017-12","v":27.8},{"m":"2018-01","v":26.1},{"m":"2018-02","v":25.0},{"m":"2018-03","v":25.1},{"m":"2018-04","v":24.8},{"m":"2018-05","v":25.5},{"m":"2018-06","v":24.8},{"m":"2018-07","v":23.5},{"m":"2018-08","v":22.2},{"m":"2018-09","v":22.1},{"m":"2018-10","v":22.5},{"m":"2018-11","v":23.8},{"m":"2018-12","v":22.8},{"m":"2019-01","v":22.5},{"m":"2019-02","v":21.6},{"m":"2019-03","v":21.4},{"m":"2019-04","v":20.8},{"m":"2019-05","v":22.0},{"m":"2019-06","v":22.0},{"m":"2019-07","v":20.8},{"m":"2019-08","v":21.8},{"m":"2019-09","v":21.1},{"m":"2019-10","v":22.5},{"m":"2019-11","v":24.6},{"m":"2019-12","v":24.4},{"m":"2020-01","v":22.6},{"m":"2020-02","v":24.9},{"m":"2020-03","v":19.4},{"m":"2020-04","v":15.2},{"m":"2020-05","v":17.7},{"m":"2020-06","v":15.9},{"m":"2020-07","v":16.6},{"m":"2020-08","v":15.4},{"m":"2020-09","v":15.4},{"m":"2020-10","v":15.3},{"m":"2020-11","v":18.0},{"m":"2020-12","v":21.5},{"m":"2021-01","v":21.7},{"m":"2021-02","v":20.8},{"m":"2021-03","v":19.0},{"m":"2021-04","v":17.2},{"m":"2021-05","v":17.9},{"m":"2021-06","v":20.2},{"m":"2021-07","v":21.7},{"m":"2021-08","v":20.8},{"m":"2021-09","v":19.9},{"m":"2021-10","v":19.3},{"m":"2021-11","v":22.7},{"m":"2021-12","v":22.0},{"m":"2022-01","v":20.4},{"m":"2022-02","v":25.0},{"m":"2022-03","v":24.7},{"m":"2022-04","v":21.5},{"m":"2022-05","v":25.1},{"m":"2022-06","v":23.1},{"m":"2022-07","v":20.9},{"m":"2022-08","v":21.3},{"m":"2022-09","v":21.3},{"m":"2022-10","v":21.1},{"m":"2022-11","v":21.5},{"m":"2022-12","v":22.2},{"m":"2023-01","v":22.1},{"m":"2023-02","v":21.8},{"m":"2023-03","v":20.4},{"m":"2023-04","v":19.5},{"m":"2023-05","v":19.8},{"m":"2023-06","v":21.8},{"m":"2023-07","v":19.7},{"m":"2023-08","v":19.9},{"m":"2023-09","v":19.6},{"m":"2023-10","v":18.7},{"m":"2023-11","v":19.3},{"m":"2023-12","v":21.5},{"m":"2024-01","v":21.6},{"m":"2024-02","v":20.1},{"m":"2024-03","v":18.1},{"m":"2024-04","v":18.2},{"m":"2024-05","v":19.5},{"m":"2024-06","v":18.2},{"m":"2024-07","v":17.7},{"m":"2024-08","v":18.0},{"m":"2024-09","v":18.5},{"m":"2024-10","v":18.2},{"m":"2024-11","v":19.4},{"m":"2024-12","v":19.5}],"months":["2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05","2024-06","2024-07","2024-08","2024-09","2024-10","2024-11","2024-12"],"actual":[201546,240896,342308,392930,423701,522737,640858,498243,536340,656895,768675,966270,891084,893352,824549,625772,618086,667720,786486,664155,666946,832233,948631,1101914,958733,1002664,859688,650748,600496,706045,776110,636277,691247,840330,973941,1060621],"preds":{"ETS":[222594,169162,62186,125329,305928,475796,606498,624388,484935,665915,769863,895092,893204,863163,711732,611465,547005,668462,752369,755165,662687,806048,943594,1081031,1019473,929278,846719,643770,569882,649052,796865,737923,636085,830966,961484,1108840],"Gradient Boosting":[203137,313940,292362,294182,317268,418805,459913,581466,587507,598337,646361,737635,799441,830837,636342,750392,584945,630495,580968,689328,705276,755543,836299,1055913,1004401,940409,729514,693045,630404,716062,796952,732634,652582,892928,973620,1125301],"LSTM":[370013,272961,322766,384239,443141,493025,601895,722428,567832,634853,757346,874965,1063853,893148,844581,777960,611166,695171,749263,911511,774314,769240,926500,1003449,1138059,886770,917310,748809,616455,686003,836519,892183,721633,782809,918372,1039651],"Random Forest":[224199,414523,350594,306681,327915,391634,452051,551827,531047,571380,630480,714910,776011,816061,569590,634970,619510,652042,617786,632204,652354,763260,816951,1051434,976552,940117,809546,716004,660244,714619,783018,730812,696315,867549,1026708,1090907],"Ridge":[227863,310636,384518,361023,549626,435275,483149,683788,433137,502612,712377,828372,860426,851382,822069,705614,528983,666012,745674,617122,842821,607032,909527,1034999,922661,918928,876434,758271,550589,526906,713087,780659,654898,793830,964027,1016514],"SARIMA":[289833,165461,69732,238221,371822,467067,577598,668266,473806,618274,737475,838362,931917,903226,863341,766781,579402,679994,743397,730488,672683,763288,936358,1082728,1043903,949642,954047,718232,620061,647823,811996,680693,637854,830029,948183,1120516],"Seasonal Naive":[83822,99640,123179,69442,13307,29397,64566,84955,106704,181325,251993,303799,201546,240896,342308,392930,423701,522737,640858,498243,536340,656895,768675,966270,891084,893352,824549,625772,618086,667720,786486,664155,666946,832233,948631,1101914]},"results":[{"Model":"SARIMA","n":36,"MAE":63794.4,"RMSE":82878.6,"MAPE%":12.2,"Accuracy%":87.8},{"Model":"ETS","n":36,"MAE":55570.5,"RMSE":84325.6,"MAPE%":11.0,"Accuracy%":89.0},{"Model":"Gradient Boosting","n":36,"MAE":77603.0,"RMSE":95337.8,"MAPE%":11.8,"Accuracy%":88.2},{"Model":"Ridge","n":36,"MAE":78794.2,"RMSE":97388.0,"MAPE%":12.7,"Accuracy%":87.3},{"Model":"Random Forest","n":36,"MAE":73925.7,"RMSE":99952.4,"MAPE%":11.9,"Accuracy%":88.1},{"Model":"LSTM","n":36,"MAE":72777.7,"RMSE":101569.9,"MAPE%":12.2,"Accuracy%":87.8},{"Model":"Seasonal Naive","n":36,"MAE":237195.7,"RMSE":317800.2,"MAPE%":38.4,"Accuracy%":61.6}]};
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = n => n >= 1e6 ? (n/1e6).toFixed(1)+"m" : n >= 1e3 ? Math.round(n/1e3)+"k" : String(Math.round(n));
+const full = n => Math.round(n).toLocaleString("en-US");
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const label = m => MON[+m.slice(5,7)-1] + " " + m.slice(0,4);
+const NS = "http://www.w3.org/2000/svg";
+const el = (t,a) => { const e = document.createElementNS(NS,t);
+  for (const k in (a||{})) e.setAttribute(k, a[k]); return e; };
+
+const R = {};
+D.results.forEach(r => { R[r.Model] = r; });
+
+document.getElementById("stats").innerHTML = [
+  ["Best accuracy", R["ETS"]["Accuracy%"].toFixed(1)+"%", "ETS &mdash; average error of 11.0% per month"],
+  ["Lowest RMSE", fmt(R["SARIMA"].RMSE), "SARIMA &mdash; fewest large misses"],
+  ["Benchmark", R["Seasonal Naive"]["Accuracy%"].toFixed(1)+"%", "Seasonal naive, the bar to clear"],
+  ["Models beating it", "6 / 6", "Every model except the benchmark itself"]
+].map(function(t){ return '<div class="tile"><div class="k">'+t[0]+'</div><div class="v">'+
+  t[1]+'</div><div class="s">'+t[2]+'</div></div>'; }).join("");
+
+const tb = document.querySelector("#tbl tbody");
+D.results.forEach(function(r){
+  const base = r.Model === "Seasonal Naive", best = r.Model === "SARIMA";
+  const tag = best ? '<span class="tag b">best rmse</span>'
+            : base ? '<span class="tag n">benchmark</span>' : "";
+  tb.insertAdjacentHTML("beforeend",
+    '<tr class="' + (best?"best":"") + (base?"base":"") + '"><td>' + r.Model + tag + '</td><td>' +
+    full(r.MAE) + '</td><td>' + full(r.RMSE) + '</td><td>' +
+    r["MAPE%"].toFixed(1) + '%</td><td>' + r["Accuracy%"].toFixed(1) + '%</td></tr>');
+});
+
+function frame(svg, W, H, pad, yMax, ticksY, xs, xEvery, xLab){
+  svg.innerHTML = "";
+  const g = el("g"); svg.appendChild(g);
+  const y = v => H - pad.b - (v / yMax) * (H - pad.t - pad.b);
+  const x = i => pad.l + (i / (xs - 1)) * (W - pad.l - pad.r);
+  for (let k = 0; k <= ticksY; k++){
+    const v = yMax * k / ticksY;
+    g.appendChild(el("line", {x1:pad.l, x2:W-pad.r, y1:y(v), y2:y(v),
+      "class": k === 0 ? "zero" : "gridline"}));
+    const t = el("text", {x:pad.l-10, y:y(v)+3.5, "class":"axis", "text-anchor":"end"});
+    t.textContent = fmt(v); g.appendChild(t);
+  }
+  for (let i = 0; i < xs; i += xEvery){
+    const t = el("text", {x:x(i), y:H-pad.b+20, "class":"axis", "text-anchor":"middle"});
+    t.textContent = xLab(i); g.appendChild(t);
+  }
+  return {g:g, x:x, y:y};
+}
+
+function path(pts, stroke, w, dash){
+  const d = pts.map((p,i) => (i?"L":"M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const a = {d:d, fill:"none", stroke:stroke, "stroke-width":w,
+    "stroke-linejoin":"round", "stroke-linecap":"round"};
+  if (dash) a["stroke-dasharray"] = dash;
+  return el("path", a);
+}
+
+function hover(svg, tip, W, H, pad, xs, x, render){
+  const cross = el("line", {y1:pad.t, y2:H-pad.b, "class":"zero", opacity:0});
+  svg.appendChild(cross);
+  const dots = el("g"); svg.appendChild(dots);
+  const hit = el("rect", {x:pad.l, y:pad.t, width:W-pad.l-pad.r, height:H-pad.t-pad.b,
+    fill:"transparent", style:"cursor:crosshair"});
+  svg.appendChild(hit);
+  function move(cx){
+    const r = svg.getBoundingClientRect();
+    const px = (cx - r.left) / r.width * W;
+    let i = Math.round((px - pad.l) / (W - pad.l - pad.r) * (xs - 1));
+    i = Math.max(0, Math.min(xs - 1, i));
+    cross.setAttribute("x1", x(i)); cross.setAttribute("x2", x(i));
+    cross.setAttribute("opacity", .55);
+    dots.innerHTML = "";
+    tip.innerHTML = render(i, dots);
+    tip.style.opacity = 1;
+    const left = x(i) / W * r.width;
+    tip.style.left = Math.min(Math.max(left + 14, 8), r.width - tip.offsetWidth - 8) + "px";
+    tip.style.top = "10px";
+  }
+  hit.addEventListener("mousemove", e => move(e.clientX));
+  hit.addEventListener("touchmove", e => move(e.touches[0].clientX), {passive:true});
+  svg.addEventListener("mouseleave", function(){
+    tip.style.opacity = 0; cross.setAttribute("opacity", 0); dots.innerHTML = ""; });
+}
+
+function drawHistory(){
+  const svg = document.getElementById("c-hist"), tip = document.getElementById("t-hist");
+  const W = 1000, H = 340, pad = {t:26, r:18, b:38, l:58};
+  const vals = D.history.map(d => d.a), n = vals.length, yMax = 1300000;
+  const f = frame(svg, W, H, pad, yMax, 4, n, 12, i => D.history[i].m.slice(0,4));
+  const g = f.g, x = f.x, y = f.y;
+
+  const ci = D.history.findIndex(d => d.m === "2020-03");
+  const ce = D.history.findIndex(d => d.m === "2021-12");
+  g.appendChild(el("rect", {x:x(ci), y:pad.t, width:x(ce)-x(ci), height:H-pad.t-pad.b,
+    fill:css("--warn"), opacity:.08}));
+  const cl = el("text", {x:(x(ci)+x(ce))/2, y:pad.t+15, "class":"axis",
+    "text-anchor":"middle", fill:css("--warn")});
+  cl.textContent = "COVID collapse"; g.appendChild(cl);
+
+  const pts = vals.map((v,i) => [x(i), y(v)]);
+  g.appendChild(el("path", {fill:css("--s1"), opacity:.11,
+    d:"M" + pad.l + " " + y(0) + " " + pts.map(p => "L"+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ") +
+      " L" + x(n-1) + " " + y(0) + " Z"}));
+  g.appendChild(path(pts, css("--s1"), 2));
+
+  const t = vals.indexOf(2820);
+  g.appendChild(el("circle", {cx:x(t), cy:y(2820), r:4.5, fill:css("--surface"),
+    stroke:css("--warn"), "stroke-width":2}));
+  const tl = el("text", {x:x(t)+9, y:y(2820)-9, "class":"axis", fill:css("--warn")});
+  tl.textContent = "Apr 2020 — 2,820"; g.appendChild(tl);
+
+  hover(svg, tip, W, H, pad, n, x, function(i, dots){
+    dots.appendChild(el("circle", {cx:x(i), cy:y(vals[i]), r:5, fill:css("--s1"),
+      stroke:css("--surface"), "stroke-width":2}));
+    return '<div class="tm">' + label(D.history[i].m) + '</div>' +
+      '<div class="row"><span><i class="sw" style="background:' + css("--s1") +
+      '"></i>Arrivals</span><b>' + full(vals[i]) + '</b></div>';
+  });
+}
+
+const SERIES = [["ETS","--s1"],["SARIMA","--s2"],["Gradient Boosting","--s3"],["LSTM","--s4"]];
+const shown = {"ETS":true, "SARIMA":true, "Gradient Boosting":false, "LSTM":false};
+
+function drawForecast(){
+  const svg = document.getElementById("c-fc"), tip = document.getElementById("t-fc");
+  const W = 1000, H = 360, pad = {t:24, r:18, b:40, l:58};
+  const n = D.months.length, yMax = 1200000;
+  const f = frame(svg, W, H, pad, yMax, 4, n, 4, i => label(D.months[i]));
+  const g = f.g, x = f.x, y = f.y;
+
+  g.appendChild(path(D.actual.map((v,i) => [x(i), y(v)]), css("--ink"), 2.6));
+  SERIES.forEach(function(s){
+    if (!shown[s[0]]) return;
+    g.appendChild(path(D.preds[s[0]].map((v,i) => [x(i), y(v)]), css(s[1]), 1.8, "5 4"));
+  });
+
+  hover(svg, tip, W, H, pad, n, x, function(i, dots){
+    dots.appendChild(el("circle", {cx:x(i), cy:y(D.actual[i]), r:5, fill:css("--ink"),
+      stroke:css("--surface"), "stroke-width":2}));
+    let rows = '<div class="tm">' + label(D.months[i]) + '</div>' +
+      '<div class="row"><span><i class="sw" style="background:' + css("--ink") +
+      '"></i>Actual</span><b>' + full(D.actual[i]) + '</b></div>';
+    SERIES.forEach(function(s){
+      if (!shown[s[0]]) return;
+      dots.appendChild(el("circle", {cx:x(i), cy:y(D.preds[s[0]][i]), r:4, fill:css(s[1]),
+        stroke:css("--surface"), "stroke-width":2}));
+      rows += '<div class="row"><span><i class="sw" style="background:' + css(s[1]) +
+        '"></i>' + s[0] + '</span><b>' + full(D.preds[s[0]][i]) + '</b></div>';
+    });
+    return rows;
+  });
+}
+
+function buildLegend(){
+  const box = document.getElementById("lg-fc");
+  box.innerHTML = '<span class="lg"><i class="sw" style="background:' + css("--ink") +
+    '"></i>Actual</span>';
+  SERIES.forEach(function(s){
+    const b = document.createElement("button");
+    b.className = "lg"; b.type = "button";
+    b.setAttribute("aria-pressed", String(shown[s[0]]));
+    b.innerHTML = '<i class="sw" style="background:' + css(s[1]) + '"></i>' + s[0];
+    b.addEventListener("click", function(){
+      shown[s[0]] = !shown[s[0]];
+      b.setAttribute("aria-pressed", String(shown[s[0]]));
+      drawForecast();
+    });
+    box.appendChild(b);
+  });
+}
+
+function drawBars(){
+  const svg = document.getElementById("c-bar"), tip = document.getElementById("t-bar");
+  const W = 1000, H = 300, pad = {t:12, r:130, b:20, l:160};
+  svg.innerHTML = "";
+  const rows = D.results.slice().sort((a,b) => a.RMSE - b.RMSE);
+  const max = Math.max.apply(null, rows.map(r => r.RMSE));
+  const bh = (H - pad.t - pad.b) / rows.length;
+  rows.forEach(function(r, i){
+    const base = r.Model === "Seasonal Naive";
+    const w = (r.RMSE / max) * (W - pad.l - pad.r);
+    const yy = pad.t + i * bh;
+    const g = el("g");
+    g.appendChild(el("rect", {x:pad.l, y:yy + bh*0.18, width:Math.max(w,3), height:bh*0.64,
+      rx:4, fill: base ? css("--warn") : css("--s1"), opacity: base ? .55 : (i === 0 ? 1 : .7)}));
+    const nm = el("text", {x:pad.l-12, y:yy+bh/2+4, "class":"axis", "text-anchor":"end",
+      fill:css("--ink")});
+    nm.textContent = r.Model; g.appendChild(nm);
+    const vl = el("text", {x:pad.l+Math.max(w,3)+10, y:yy+bh/2+4, "class":"axis",
+      fill:css("--muted")});
+    vl.textContent = full(r.RMSE); g.appendChild(vl);
+    g.style.cursor = "pointer";
+    g.addEventListener("mouseenter", function(){
+      tip.innerHTML = '<div class="tm">' + r.Model + '</div>' +
+        '<div class="row"><span>RMSE</span><b>' + full(r.RMSE) + '</b></div>' +
+        '<div class="row"><span>MAE</span><b>' + full(r.MAE) + '</b></div>' +
+        '<div class="row"><span>Accuracy</span><b>' + r["Accuracy%"].toFixed(1) + '%</b></div>';
+      tip.style.opacity = 1;
+      tip.style.left = "180px";
+      tip.style.top = (yy / H * svg.getBoundingClientRect().height) + "px";
+    });
+    svg.appendChild(g);
+  });
+  svg.addEventListener("mouseleave", function(){ tip.style.opacity = 0; });
+}
+
+function drawWF(){
+  const svg = document.getElementById("c-wf");
+  svg.innerHTML = "";
+  const W = 1000, L = 130, R = 40, rows = 5, bh = 22, gap = 9;
+  for (let i = 0; i < rows; i++){
+    const y = 22 + i * (bh + gap);
+    const trainW = (W - L - R) * (0.50 + i * 0.08);
+    const g = el("g");
+    g.appendChild(el("rect", {x:L, y:y, width:trainW, height:bh, rx:4,
+      fill:css("--s1"), opacity:.20}));
+    g.appendChild(el("rect", {x:L+trainW+4, y:y, width:26, height:bh, rx:4, fill:css("--s2")}));
+    const t = el("text", {x:L-12, y:y+bh/2+4, "class":"axis", "text-anchor":"end"});
+    t.textContent = "step " + (i+1); g.appendChild(t);
+    if (i === 0){
+      const a = el("text", {x:L+trainW/2, y:y+bh/2+4, "class":"axis",
+        "text-anchor":"middle", fill:css("--ink-2")});
+      a.textContent = "training data (grows each step)"; g.appendChild(a);
+      const b = el("text", {x:L+trainW+40, y:y-6, "class":"axis", fill:css("--s2")});
+      b.textContent = "forecast"; g.appendChild(b);
+    }
+    svg.appendChild(g);
+  }
+}
+
+function drawAll(){ drawHistory(); buildLegend(); drawForecast(); drawBars(); drawWF(); }
+drawAll();
+if (window.matchMedia){
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", drawAll);
+}
+</script>
